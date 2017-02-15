@@ -129,8 +129,8 @@ class node():
 		labs = []
 		for item in self.vecs:
 			labs.append(item[22])
-
-		return len(list(set(labs)))
+		labs = list(set(labs))
+		return labs
 
 
 class DT():
@@ -141,7 +141,7 @@ class DT():
 
 	def build(self,n):
 		print(n.rule, n.bound)
-		if(n.labels() == 1):
+		if(len(n.labels()) == 1):
 			return
 		else:
 			i = n.rule
@@ -164,6 +164,20 @@ class DT():
 			self.build(n.left)
 			self.build(n.right)
 
+	def predict(self, vec):
+		temp = self.root
+		while(len(temp.labels()) > 1):
+			i = temp.rule
+			bound = temp.bound
+			# print(vec)
+			# print(i,bound)
+			if vec[i] < bound:
+				temp = temp.left
+			else:
+				temp = temp.right
+		print(temp.labels()[0])
+		return temp.labels()[0]
+
 
 
 
@@ -171,7 +185,6 @@ class DT():
 
 def readData():
 	dataSet = []
-	labs = []
 	f = open('hw3train.txt', 'r')
 	for line in f.readlines():
 		line = line.strip('\n')
@@ -179,9 +192,6 @@ def readData():
 		floats = line.split(' ')
 
 		vecs = [float(i) for i in floats[0:23]]
-		label = float(floats[22])
-
-		labs.append(label)
 
 		dataSet.append(vecs)
 
@@ -192,7 +202,37 @@ def readData():
 	#print(list(set(labs)))
 	root = node(dataSet)
 	dt = DT(root)
-		
+
+	total = len(dataSet)
+	err = 0
+	index = 1
+	for item in dataSet:
+		print(index," evaluate error")
+		res = dt.predict(item)
+		if res != item[len(item)-1]:
+			err += 1
+		index += 1
+
+	print("training error: ",err / len(dataSet))
+
+	# test error
+	test = open('hw3test.txt', 'r')
+	testDataSet = []
+	for line in test.readlines():
+		line = line.strip('\n')
+		floats = line.split(' ')
+
+		testVec = [float(i) for i in floats[0:23]]
+		testDataSet.append(testVec)
+	err = 0
+	index = 1
+	for item in testDataSet:
+		print(index, " evaluate test error")
+		res = dt.predict(item)
+		if res != item[len(item)-1]:
+			err += 1
+		index += 1
+	print("testing error: ",err / len(dataSet))
 
 
 readData()
