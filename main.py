@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import sys
+import queue
 from lxml.html import document_fromstring
 
 #feature rule:(index, split), ex: (x5, 0.5)==>(4,0.5)
@@ -180,9 +181,28 @@ class DT():
 
 
 
+#####################	with pruning   ########################
+# def pruning(dt):
+# 	dataSet = []
+# 	f = open('hw3validation.txt', 'r')
+# 	for line in f.readlines():
+# 		line = line.strip('\n')
+
+# 		floats = line.split(' ')
+
+# 		vecs = [float(i) for i in floats[0:23]]
+
+# 		dataSet.append(vecs)
+# 	f.close()
+
+# 	replace = dt
+
+
+
+
 
 ############################################################
-
+#####       Without Pruning		######################
 def readData():
 	dataSet = []
 	f = open('hw3train.txt', 'r')
@@ -224,6 +244,7 @@ def readData():
 
 		testVec = [float(i) for i in floats[0:23]]
 		testDataSet.append(testVec)
+	test.close()
 	err = 0
 	index = 1
 	for item in testDataSet:
@@ -233,6 +254,9 @@ def readData():
 			err += 1
 		index += 1
 	print("testing error: ",err / len(dataSet))
+
+	# pasing the tree to pruning function
+	pruning(dt)
 
 
 readData()
