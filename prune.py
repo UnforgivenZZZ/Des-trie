@@ -18,8 +18,8 @@ class node():
 		self.isLeaf = False
 		#print(len(self.vecs[542]))
 		#calculate maxium labels in this node
-		labs = self.labels()
-		if len(labs) == 1:
+		numLabs = self.labels()
+		if len(numLabs) == 1:
 			self.isLeaf = True
 
 		num1 = 0
@@ -69,7 +69,7 @@ class node():
 		print(len(feature[0]))
 
 		for i in range(0,len(feature)):
-			# print(i+1)
+			print(i+1)
 			for j in range(0, len(feature[i])):
 				entropy = self.entropy(i, feature[i][j], labs)
 				if entropy < minE:
@@ -193,19 +193,97 @@ class DT():
 		# print(temp.labels()[0])
 		return temp.maxLabel
 
+	def prune(self, replaceNode,dataSet,verr, testDataSet):
+		replaceNode.isLeaf = True
+		total = len(dataSet)
+		err = 0
+		for item in dataSet:
+			# print(index," evaluate error")
+			res = self.predict(item)
+			if res != item[len(item)-1]:
+				err += 1
+		newVerr = err / len(dataSet)
+		print("validation error ", newVerr)
 
-############################################################
-#####		The Last one       ######################
-def zui_hou_yi_wen(dt):
-	min = 0
-	featureSet = []
-	f = open('hw3features.txt', 'r')
+		err = 0
+		for item in testDataSet:
+			res = self.predict(item)
+			if res != item[len(item)-1]:
+				err += 1
+		terr = err / len(testDataSet)
+		print("test error: ", terr)
+
+		if newVerr > verr:
+			replaceNode.isLeaf = False
+		else:
+			verr = newVerr
+		return verr
+
+
+		
+
+
+
+#####################	with pruning   ########################
+def pruning(dt):
+	dataSet = []
+	f = open('hw3validation.txt', 'r')
 	for line in f.readlines():
 		line = line.strip('\n')
-		featureSet.append(line)
-	print(featureSet)
+
+		floats = line.split(' ')
+
+		vecs = [float(i) for i in floats[0:23]]
+
+		dataSet.append(vecs)
 	f.close()
 
+	# calculate violdation error:
+	total = len(dataSet)
+	err = 0
+	index = 1
+	for item in dataSet:
+		# print(index," evaluate error")
+		res = dt.predict(item)
+		if res != item[len(item)-1]:
+			err += 1
+		index += 1
+
+	print("intial validation error: ",err / len(dataSet))
+	verr = err / len(dataSet)
+
+	test = open('hw3test.txt', 'r')
+	testDataSet = []
+	for line in test.readlines():
+		line = line.strip('\n')
+		floats = line.split(' ')
+
+		testVec = [float(i) for i in floats[0:23]]
+		testDataSet.append(testVec)
+	test.close()
+
+	trie = dt
+	q = queue.Queue()
+	x = trie.root.left
+	if x is not None:
+		q.put(x)
+	x = trie.root.right
+	if x is not None:
+		q.put(trie.root.right)
+	while(not q.empty()):
+		x = q.get()
+		verr = trie.prune(x,dataSet,verr, testDataSet)
+		if x.left is not None:
+			q.put(x.left)
+		if x.right is not None:
+			q.put(x.right)
+
+
+
+
+
+
+############################################################
 #####       Without Pruning		######################
 def readData():
 	dataSet = []
@@ -226,41 +304,39 @@ def readData():
 	#print(list(set(labs)))
 	root = node(dataSet)
 	dt = DT(root)
+	# pasing the tree to pruning function
+	pruning(dt)
+	# total = len(dataSet)
+	# err = 0
+	# index = 1
+	# for item in dataSet:
+	# 	# print(index," evaluate error")
+	# 	res = dt.predict(item)
+	# 	if res != item[len(item)-1]:
+	# 		err += 1
+	# 	index += 1
 
-	total = len(dataSet)
-	err = 0
-	index = 1
-	for item in dataSet:
-		#print(index," evaluate error")
-		res = dt.predict(item)
-		if res != item[len(item)-1]:
-			err += 1
-		index += 1
+	# print("training error: ",err / len(dataSet))
 
-	print("training error: ",err / len(dataSet))
+	# # test error
+	# test = open('hw3test.txt', 'r')
+	# testDataSet = []
+	# for line in test.readlines():
+	# 	line = line.strip('\n')
+	# 	floats = line.split(' ')
 
-	# test error
-	test = open('hw3test.txt', 'r')
-	testDataSet = []
-	for line in test.readlines():
-		line = line.strip('\n')
-		floats = line.split(' ')
-
-		testVec = [float(i) for i in floats[0:23]]
-		testDataSet.append(testVec)
-	test.close()
-	err = 0
-	index = 1
-	for item in testDataSet:
-		#print(index, " evaluate test error")
-		res = dt.predict(item)
-		if res != item[len(item)-1]:
-			err += 1
-		index += 1
-	print("testing error: ",err / len(testDataSet))
-
-	#最后一问
-	zui_hou_yi_wen(dt)
+	# 	testVec = [float(i) for i in floats[0:23]]
+	# 	testDataSet.append(testVec)
+	# test.close()
+	# err = 0
+	# index = 1
+	# for item in testDataSet:
+	# 	# print(index, " evaluate test error")
+	# 	res = dt.predict(item)
+	# 	if res != item[len(item)-1]:
+	# 		err += 1
+	# 	index += 1
+	# print("testing error: ",err / len(dataSet))
 
 
 readData()
