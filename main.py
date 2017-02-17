@@ -15,7 +15,17 @@ class node():
 		self.right = None
 		self.rule = None
 		self.bound = None
+		self.isLeaf = False
 		#print(len(self.vecs[542]))
+		#calculate maxium labels in this node
+		num1 = 0
+		num0 = 0
+		for item in self.vecs:
+			if item[22] == 1:
+				num1 += 1
+			else:
+				num0 += 1
+		self.maxLabel = (num1 if num1 > num0 else num0)
 		self.findRule()
 
 	def findRule(self):
@@ -131,6 +141,8 @@ class node():
 		for item in self.vecs:
 			labs.append(item[22])
 		labs = list(set(labs))
+		if len(labs) == 1:
+			self.isLeaf = True
 		return labs
 
 
@@ -176,28 +188,8 @@ class DT():
 				temp = temp.left
 			else:
 				temp = temp.right
-		print(temp.labels()[0])
+		# print(temp.labels()[0])
 		return temp.labels()[0]
-
-
-
-#####################	with pruning   ########################
-# def pruning(dt):
-# 	dataSet = []
-# 	f = open('hw3validation.txt', 'r')
-# 	for line in f.readlines():
-# 		line = line.strip('\n')
-
-# 		floats = line.split(' ')
-
-# 		vecs = [float(i) for i in floats[0:23]]
-
-# 		dataSet.append(vecs)
-# 	f.close()
-
-# 	replace = dt
-
-
 
 
 
@@ -227,7 +219,7 @@ def readData():
 	err = 0
 	index = 1
 	for item in dataSet:
-		print(index," evaluate error")
+		#print(index," evaluate error")
 		res = dt.predict(item)
 		if res != item[len(item)-1]:
 			err += 1
@@ -248,15 +240,12 @@ def readData():
 	err = 0
 	index = 1
 	for item in testDataSet:
-		print(index, " evaluate test error")
+		#print(index, " evaluate test error")
 		res = dt.predict(item)
 		if res != item[len(item)-1]:
 			err += 1
 		index += 1
-	print("testing error: ",err / len(dataSet))
-
-	# pasing the tree to pruning function
-	pruning(dt)
+	print("testing error: ",err / len(testDataSet))
 
 
 readData()
