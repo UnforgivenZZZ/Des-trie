@@ -273,6 +273,8 @@ def pruning(dt):
 	while(not q.empty()):
 		x = q.get()
 		verr = trie.prune(x,dataSet,verr, testDataSet)
+		if x.isLeaf is True:
+			continue
 		if x.left is not None:
 			q.put(x.left)
 		if x.right is not None:
